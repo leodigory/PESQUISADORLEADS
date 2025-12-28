@@ -133,6 +133,27 @@ export default function ComprehensiveSearchWithResults() {
   const [stateSearch, setStateSearch] = useState<string>("");
   const [citySearch, setCitySearch] = useState<string>("");
 
+  // NETLIFY: Use client-side mock generation instead of tRPC for static demo
+  const [mockResults, setMockResults] = useState<any[]>([]);
+  const [isLoadingResults, setIsLoadingResults] = useState(false);
+
+  // Import the local mock generator dynamically to avoid build issues if mixed
+  const fetchMockLeads = async () => {
+    setIsLoadingResults(true);
+    // Simulate network delay
+    await new Promise(r => setTimeout(r, 800));
+
+    // Dynamic import to ensure it works client-side
+    const { generateMockLeads } = await import("@/lib/mockLeadData");
+    const leads = generateMockLeads(selectedCity, selectedNeighborhood);
+    setMockResults(leads);
+    setIsLoadingResults(false);
+  };
+
+  // Refetch function wrapper
+  const refetch = fetchMockLeads;
+
+  /* 
   const { data: mockResults, isLoading: isLoadingResults, refetch } = trpc.leads.getMockResults.useQuery(
     {
       state: selectedState,
@@ -141,6 +162,7 @@ export default function ComprehensiveSearchWithResults() {
     },
     { enabled: false }
   );
+  */
 
   const filteredStates = useMemo(() => {
     if (!stateSearch) return BRAZILIAN_STATES;
