@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1766889321254,
+      "tag": "0000_broad_cargill",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1766889413078,
+      "tag": "0001_absent_magma",
+      "breakpoints": true
+    }
+  ]
+}
