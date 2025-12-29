@@ -89,53 +89,112 @@ const getSmartLink = (platform: string, context: string = "", username?: string)
 };
 
 
-const TOP_TIER_PROFILES = [
-  // Grandes Imobiliárias
-  { username: "lopesimmobilis", name: "Lopes Immobilis", url: "https://www.instagram.com/lopesimmobilis/" },
-  { username: "triunfoimoveisfortaleza", name: "Triunfo Imóveis", url: "https://www.instagram.com/triunfoimoveisfortaleza/" },
-  { username: "apredial", name: "A Predial", url: "https://www.instagram.com/apredial/" },
-  { username: "madrededeusimoveis", name: "Madre de Deus", url: "https://www.instagram.com/madrededeusimoveis/" },
-  { username: "alessandrobelchiorimoveis", name: "Alessandro Belchior", url: "https://www.instagram.com/alessandrobelchiorimoveis/" },
-  { username: "sjimoveis", name: "SJ Imóveis", url: "https://www.instagram.com/sjimoveis/" },
-  { username: "ricardo_bezerra", name: "Ricardo Bezerra", url: "https://www.instagram.com/ricardo_bezerra/" },
-  { username: "flaviocastroimoveis", name: "Flávio Castro", url: "https://www.instagram.com/flaviocastroimoveis/" },
-  { username: "marcellusbrunooficial", name: "Marcellus Bruno", url: "https://www.instagram.com/marcellusbrunooficial/" },
-  // Construtoras (Foco em Lançamentos)
-  { username: "mouradubeux_oficial", name: "Moura Dubeux", url: "https://www.instagram.com/mouradubeux_oficial/" },
-  { username: "bspar_incorporacoes", name: "BSPAR", url: "https://www.instagram.com/bspar_incorporacoes/" },
-  { username: "colmeiaconstrutora", name: "Colmeia Construtora", url: "https://www.instagram.com/colmeiaconstrutora/" },
-  { username: "mota_machado", name: "Mota Machado", url: "https://www.instagram.com/mota_machado/" },
-  { username: "victaengenharia", name: "Victa Engenharia", url: "https://www.instagram.com/victaengenharia/" },
-  { username: "diagonalengenharia", name: "Diagonal", url: "https://www.instagram.com/diagonalengenharia/" },
-];
+// --- DYNAMIC DATA GENERATION POOLS ---
 
-const REAL_DEVELOPMENTS = [
-  "ITC", "WSTC", "BS Design", "Legacy", "Rooftop Canuto 1000",
-  "São Carlos Condominium", "Maison de la Musique", "Arboretto",
-  "Azure", "Landscapes", "Mandara", "Golf Ville", "Beach Class"
-];
+const BUILDERS = {
+  economic: ["MRV", "Tenda", "Victa", "Canopus", "Direcional", "Cury"],
+  premium: ["Moura Dubeux", "BSPAR", "Colmeia", "Diagonal", "Mota Machado", "Normatel", "C. Rolim"]
+};
 
-// Comments specific to real estate context
-const CONTEXTUAL_COMMENTS = [
-  "Qual o valor da unidade de 3 quartos no {DEV}?",
-  "Tenho interesse nesse do {NEIGHBORHOOD}. Pode mandar a tabela?",
-  "@marido_exemplo olha esse no {NEIGHBORHOOD}, perto do colégio das crianças",
-  "O {DEV} aceita financiamento pela Caixa?",
-  "Ainda tem disponibilidade no {DEV}? Vi que a entrega é em breve.",
-  "Valor do metro quadrado no {NEIGHBORHOOD} tá quanto?",
-  "Me chama no direct, quero visitar o decorado do {DEV}",
-  "Esse valor de entrada divide em quantas vezes?",
-  "O {DEV} tem vista mar? Sou do {NEIGHBORHOOD}",
-  "Tenho um imóvel no {NEIGHBORHOOD} pra dar de entrada, aceitam?",
-  "Me passa as plantas do {DEV} por favor (85) 9{PHONE}",
-  "Gostei muito desse no {NEIGHBORHOOD}. (85) 9{PHONE}",
-  "Preço? (85) 9{PHONE}",
-  "Informações direct",
-  "valor",
-];
+// Cities and their neighborhoods (Fortaleza + Metro)
+const CEARA_LOCATIONS = {
+  "Fortaleza": [
+    "Meireles", "Aldeota", "Cocó", "Guararapes", "Papicu", "Dionísio Torres", "Fátima",
+    "Benfica", "Parquelândia", "Presidente Kennedy", "Messejana", "Passaré", "Mondubim",
+    "Maraponga", "Cidade dos Funcionários", "José de Alencar", "Praia do Futuro"
+  ],
+  "Eusébio": ["Centro", "Urucunema", "Coaçu", "Eusébio Open Mall", "Alphaville"],
+  "Aquiraz": ["Porto das Dunas", "Centro", "Prainha"],
+  "Caucaia": ["Centro", "Icaraí", "Cumbuco", "Nova Metrópole"],
+  "Maracanaú": ["Centro", "Jereissati", "Pajuçara"]
+};
+
+// Vocabulary for generative comments
+const VOCABULARY = {
+  openers: ["Olá", "Boa tarde", "Bom dia", "Opa", "Tudo bem?", "Gostaria de saber", "Poderia me informar"],
+  interests: ["qual o valor", "preço por favor", "tenho interesse", "como funciona o financiamento", "aceita carro?", "aceita fgts?", "gostaria de visitar", "envia a tabela"],
+  details: ["da unidade de 2 quartos", "desse lançamento", "do apto decorado", "desse empreendimento", "pra minha renda", "no andar alto"],
+  closers: ["obrigado", "aguardo", "chama no direct", "me liga", "manda no zap"],
+  mcmv_terms: ["subsídio", "minha casa minha vida", "entrada parcelada", "documentação grátis", "renda familiar", "zero de entrada"]
+};
+
+/**
+ * Generates a realistic broker or agency profile handle/name
+ * Simulates the "Automatic Scan" finding diverse sources.
+ */
+const generateRealisticProfile = (category: 'economic' | 'premium' | 'general' = 'general') => {
+  const suffixes = ["imoveis", "corretor", "consultoria", "vendas", "fortaleza", "ce", "gestor", "broker", "realestate"];
+  const names = ["carlos", "ana", "paulo", "juliana", "felipe", "mariana", "joao", "fernanda", "roberto", "lucas"];
+
+  // 40% chance of being a major builder/agency, 60% independent broker
+  if (Math.random() < 0.4) {
+    const builderList = category === 'economic' ? BUILDERS.economic : BUILDERS.premium;
+    const builder = builderList[Math.floor(Math.random() * builderList.length)];
+    const variant = ["_vendas", "_fortaleza", "_oficial", ".ce", "_lancamentos"][Math.floor(Math.random() * 5)];
+    return {
+      username: `${builder.toLowerCase().replace(/\s/g, "")}${variant}`,
+      name: `${builder} Vendas`,
+      url: `https://www.instagram.com/${builder.toLowerCase().replace(/\s/g, "")}${variant}/`
+    };
+  } else {
+    const name = names[Math.floor(Math.random() * names.length)];
+    const surname = ["silva", "santos", "oliveira", "costa", "pereira"][Math.floor(Math.random() * 5)];
+    const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    const username = `${name}${surname}.${suffix}`;
+    return {
+      username: username,
+      name: `${name.charAt(0).toUpperCase() + name.slice(1)} ${surname.charAt(0).toUpperCase() + surname.slice(1)}`,
+      url: `https://www.instagram.com/${username}/`
+    };
+  }
+};
+
+/**
+ * Dynamically constructs a comment based on the lead's "Persona"
+ */
+const generateDynamicComment = (leadType: 'mcmv' | 'investor' | 'family') => {
+  const isMCMV = leadType === 'mcmv';
+  const isInvestor = leadType === 'investor';
+
+  if (isMCMV) {
+    const term = VOCABULARY.mcmv_terms[Math.floor(Math.random() * VOCABULARY.mcmv_terms.length)];
+    const constructions = [
+      `Minha renda é 2.500, consigo financiar?`,
+      `Como funciona a entrada parcelada?`,
+      `Aceita FGTS na entrada? Tenho interesse.`,
+      `Esse entra no Minha Casa Minha Vida?`,
+      `Tenho interesse, mas minha renda é baixa. Tem subsidio?`,
+      `Quero sair do aluguel, me ajuda.`,
+      `Qual o valor da entrada pra quem ganha 3 salários?`
+    ];
+    return constructions[Math.floor(Math.random() * constructions.length)];
+  }
+
+  if (isInvestor) {
+    const constructions = [
+      "Qual a previsão de entrega e rentabilidade?",
+      "Tabela de investidor, por favor.",
+      "Tem unidades compactas/studio disponíveis?",
+      "Qual o valor do m2 nesta região?",
+      "Aceita permuta em imóvel de menor valor?",
+      "Qual o fluxo de pagamento durante a obra?"
+    ];
+    return constructions[Math.floor(Math.random() * constructions.length)];
+  }
+
+  // Standard Family Buyer
+  const opener = Math.random() > 0.5 ? VOCABULARY.openers[Math.floor(Math.random() * VOCABULARY.openers.length)] : "";
+  const interest = VOCABULARY.interests[Math.floor(Math.random() * VOCABULARY.interests.length)];
+  const detail = Math.random() > 0.5 ? VOCABULARY.details[Math.floor(Math.random() * VOCABULARY.details.length)] : "";
+
+  return `${opener} ${interest} ${detail}`.trim() + (Math.random() > 0.7 ? "?" : "");
+};
 
 const getRandomProfile = () => {
-  return TOP_TIER_PROFILES[Math.floor(Math.random() * TOP_TIER_PROFILES.length)];
+  // Determine category randomly
+  const rand = Math.random();
+  const type = rand < 0.3 ? 'economic' : rand < 0.6 ? 'premium' : 'general';
+  return generateRealisticProfile(type);
 };
 
 export const generateMockLeads = (
@@ -185,23 +244,25 @@ export const generateMockLeads = (
       analysisText = "Resumo: Lead em massa (Lista Fria/Morn)";
       qualityScore = 95;
     } else {
-      // Pick a CONTEXUAL comment capable of referencing real developments
-      const development = REAL_DEVELOPMENTS[Math.floor(Math.random() * REAL_DEVELOPMENTS.length)];
-      const rawComment = CONTEXTUAL_COMMENTS[Math.floor(Math.random() * CONTEXTUAL_COMMENTS.length)];
+      // Determine simulated persona for this lead
+      const rand = Math.random();
+      let leadType: 'mcmv' | 'investor' | 'family' = 'family';
 
-      commentText = rawComment
-        .replace("{DEV}", development)
-        .replace("{NEIGHBORHOOD}", localNeighborhood)
-        .replace("{PHONE}", plausiblePhone);
+      // Heuristic: If searching for Tenda/MRV (Economic builders), likely MCMV persona
+      if (rand < 0.4) leadType = 'mcmv';
+      else if (rand > 0.85) leadType = 'investor';
 
-      // Derive intent from the text content purely for display
-      const intent = commentText.toLowerCase().includes("valor") ? "Cotação de Preço" :
-        commentText.toLowerCase().includes("visitar") ? "Solicitação de Visita" :
-          commentText.toLowerCase().includes("financiamento") ? "Dúvida Financeira" :
-            "Interesse Geral";
+      commentText = generateDynamicComment(leadType);
+
+      // Determine Intent Label for display
+      let intent = "Interesse Geral";
+      if (leadType === 'mcmv') intent = "Minha Casa Minha Vida / Subsídio";
+      if (leadType === 'investor') intent = "Investimento / Rentabilidade";
+      if (commentText.includes("visitar")) intent = "Solicitação de Visita";
+      if (commentText.includes("valor") || commentText.includes("preço")) intent = "Cotação de Preço";
 
       analysisText = `Resumo: ${intent}`;
-      qualityScore = commentText.length > 20 ? 85 : 60;
+      qualityScore = leadType === 'mcmv' ? 85 : 70; // MCMV leads often have higher intent urgency
 
       // Add context to comment (rarely) but never add a fake phone here
       if (Math.random() > 0.9) commentText += " aguardo retorno";
