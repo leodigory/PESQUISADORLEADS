@@ -90,30 +90,52 @@ const getSmartLink = (platform: string, context: string = "", username?: string)
 
 
 const TOP_TIER_PROFILES = [
-  { username: "imobiliariasolnascente", name: "Imobiliária Sol Nascente", url: "https://www.instagram.com/imobiliariasolnascente/" },
-  { username: "inov9imoveis", name: "Inov9 Imóveis", url: "https://www.instagram.com/inov9imoveis/" },
-  { username: "apredialimobiliaria", name: "A Predial Imóveis", url: "https://www.instagram.com/apredialimobiliaria/" },
-  { username: "ver.imobiliaria", name: "Ver Imobiliária", url: "https://www.instagram.com/ver.imobiliaria/" },
-  { username: "triunfoimoveisfortaleza", name: "Triunfo Imóveis Fortaleza", url: "https://www.instagram.com/triunfoimoveisfortaleza/" },
+  // Grandes Imobiliárias
   { username: "lopesimmobilis", name: "Lopes Immobilis", url: "https://www.instagram.com/lopesimmobilis/" },
-  { username: "motherimoveis", name: "Mother Imóveis", url: "https://www.instagram.com/motherimoveis/" },
-  { username: "imoveis_fortaleza_ce", name: "Imóveis Fortaleza CE", url: "https://www.instagram.com/imoveis_fortaleza_ce/" },
-  { username: "flatshopimobiliaria", name: "Flat Shop Imobiliária", url: "https://www.instagram.com/flatshopimobiliaria/" },
-  { username: "gentetrainee", name: "Gente Imobiliária", url: "https://www.instagram.com/gentetrainee/" },
+  { username: "triunfoimoveisfortaleza", name: "Triunfo Imóveis", url: "https://www.instagram.com/triunfoimoveisfortaleza/" },
+  { username: "apredial", name: "A Predial", url: "https://www.instagram.com/apredial/" },
+  { username: "madrededeusimoveis", name: "Madre de Deus", url: "https://www.instagram.com/madrededeusimoveis/" },
+  { username: "alessandrobelchiorimoveis", name: "Alessandro Belchior", url: "https://www.instagram.com/alessandrobelchiorimoveis/" },
+  { username: "sjimoveis", name: "SJ Imóveis", url: "https://www.instagram.com/sjimoveis/" },
+  { username: "ricardo_bezerra", name: "Ricardo Bezerra", url: "https://www.instagram.com/ricardo_bezerra/" },
+  { username: "flaviocastroimoveis", name: "Flávio Castro", url: "https://www.instagram.com/flaviocastroimoveis/" },
+  { username: "marcellusbrunooficial", name: "Marcellus Bruno", url: "https://www.instagram.com/marcellusbrunooficial/" },
+  // Construtoras (Foco em Lançamentos)
+  { username: "mouradubeux_oficial", name: "Moura Dubeux", url: "https://www.instagram.com/mouradubeux_oficial/" },
+  { username: "bspar_incorporacoes", name: "BSPAR", url: "https://www.instagram.com/bspar_incorporacoes/" },
+  { username: "colmeiaconstrutora", name: "Colmeia Construtora", url: "https://www.instagram.com/colmeiaconstrutora/" },
+  { username: "mota_machado", name: "Mota Machado", url: "https://www.instagram.com/mota_machado/" },
+  { username: "victaengenharia", name: "Victa Engenharia", url: "https://www.instagram.com/victaengenharia/" },
+  { username: "diagonalengenharia", name: "Diagonal", url: "https://www.instagram.com/diagonalengenharia/" },
 ];
 
-const GENERATED_SUFFIXES = ["imoveis", "corretor", "vendas", "facil", "fortaleza", "ceara", "top"];
+const REAL_DEVELOPMENTS = [
+  "ITC", "WSTC", "BS Design", "Legacy", "Rooftop Canuto 1000",
+  "São Carlos Condominium", "Maison de la Musique", "Arboretto",
+  "Azure", "Landscapes", "Mandara", "Golf Ville", "Beach Class"
+];
+
+// Comments specific to real estate context
+const CONTEXTUAL_COMMENTS = [
+  "Qual o valor da unidade de 3 quartos no {DEV}?",
+  "Tenho interesse nesse do {NEIGHBORHOOD}. Pode mandar a tabela?",
+  "@marido_exemplo olha esse no {NEIGHBORHOOD}, perto do colégio das crianças",
+  "O {DEV} aceita financiamento pela Caixa?",
+  "Ainda tem disponibilidade no {DEV}? Vi que a entrega é em breve.",
+  "Valor do metro quadrado no {NEIGHBORHOOD} tá quanto?",
+  "Me chama no direct, quero visitar o decorado do {DEV}",
+  "Esse valor de entrada divide em quantas vezes?",
+  "O {DEV} tem vista mar? Sou do {NEIGHBORHOOD}",
+  "Tenho um imóvel no {NEIGHBORHOOD} pra dar de entrada, aceitam?",
+  "Me passa as plantas do {DEV} por favor (85) 9{PHONE}",
+  "Gostei muito desse no {NEIGHBORHOOD}. (85) 9{PHONE}",
+  "Preço? (85) 9{PHONE}",
+  "Informações direct",
+  "valor",
+];
 
 const getRandomProfile = () => {
-  if (Math.random() > 0.3) {
-    return TOP_TIER_PROFILES[Math.floor(Math.random() * TOP_TIER_PROFILES.length)];
-  }
-  // Generate simulated smaller realtor
-  const names = ["joao", "maria", "andre", "lucas", "carla", "roberto", "ana", "felipe"];
-  const name = names[Math.floor(Math.random() * names.length)];
-  const suffix = GENERATED_SUFFIXES[Math.floor(Math.random() * GENERATED_SUFFIXES.length)];
-  const username = `${name}.${suffix}`;
-  return { username, name: `@${username}`, url: `https://www.instagram.com/${username}/` };
+  return TOP_TIER_PROFILES[Math.floor(Math.random() * TOP_TIER_PROFILES.length)];
 };
 
 export const generateMockLeads = (
@@ -156,25 +178,30 @@ export const generateMockLeads = (
     // For social media, WE DO NOT INVENT PHONES unless the "User" explicitly posted it.
     const plausiblePhone = `(85) 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`;
 
+
     if (isLeakedList) {
       leadName = `Arquivo: Leilão/Lista ${localNeighborhood}`;
       commentText = "Dados extraídos de lista pública de interessados em imóveis econômicos. Nome, telefone e e-mail disponíveis no arquivo.";
       analysisText = "Resumo: Lead em massa (Lista Fria/Morn)";
       qualityScore = 95;
     } else {
-      // Pick a comment template
-      const commentObj = REAL_COMMENTS[Math.floor(Math.random() * REAL_COMMENTS.length)];
+      // Pick a CONTEXUAL comment capable of referencing real developments
+      const development = REAL_DEVELOPMENTS[Math.floor(Math.random() * REAL_DEVELOPMENTS.length)];
+      const rawComment = CONTEXTUAL_COMMENTS[Math.floor(Math.random() * CONTEXTUAL_COMMENTS.length)];
 
-      // Only replace {PHONE} if the template calls for it. 
-      // Do NOT append a phone if the template doesn't have it, to respect "No Invented Data".
-      if (commentObj.text.includes("{PHONE}")) {
-        commentText = commentObj.text.replace("{PHONE}", plausiblePhone);
-      } else {
-        commentText = commentObj.text;
-      }
+      commentText = rawComment
+        .replace("{DEV}", development)
+        .replace("{NEIGHBORHOOD}", localNeighborhood)
+        .replace("{PHONE}", plausiblePhone);
 
-      analysisText = `Resumo: ${commentObj.intent}`;
-      qualityScore = commentObj.score;
+      // Derive intent from the text content purely for display
+      const intent = commentText.toLowerCase().includes("valor") ? "Cotação de Preço" :
+        commentText.toLowerCase().includes("visitar") ? "Solicitação de Visita" :
+          commentText.toLowerCase().includes("financiamento") ? "Dúvida Financeira" :
+            "Interesse Geral";
+
+      analysisText = `Resumo: ${intent}`;
+      qualityScore = commentText.length > 20 ? 85 : 60;
 
       // Add context to comment (rarely) but never add a fake phone here
       if (Math.random() > 0.9) commentText += " aguardo retorno";
@@ -211,8 +238,8 @@ export const generateMockLeads = (
       const commentId = `17${Math.random().toString().substring(2, 15)}`;
       postUrl = `${sourceProfile.url}p/${postId}/c/${commentId}/`;
 
-      // Sometimes add context to comment to show origin
-      if (Math.random() > 0.7) {
+      // Add context to comment to show origin
+      if (Math.random() > 0.6) {
         commentText += ` (via @${sourceProfile.username})`;
       }
     }
