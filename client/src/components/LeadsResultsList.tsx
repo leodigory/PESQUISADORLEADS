@@ -166,88 +166,63 @@ export default function LeadsResultsList({ leads, isLoading, actionedLeads, onTo
                     )}
                   </div>
 
-                  <div className="space-y-3 mb-5">
-                    {whatsappNumber && (
-                      <div className="flex items-center gap-3 w-full">
-                        <Button
-                          className="flex-1 h-12 bg-[#25D366] hover:bg-[#128C7E] text-white shadow-sm rounded-lg font-bold text-base gap-2"
-                          onClick={() => window.open(`https://wa.me/55${whatsappNumber}`, '_blank')}
-                        >
-                          <MessageCircle size={20} className="fill-current" />
-                          WhatsApp
-                        </Button>
-                        <div className="text-sm font-mono text-slate-500 bg-slate-50 px-3 py-3 rounded-lg border border-slate-100 select-all">
-                          (85) {whatsappNumber.replace(/(\d{2})(\d{5})(\d{4})/, "$1 $2-$3")}
-                        </div>
-                      </div>
-                    )}
-
-                    {lead.phone && (
-                      <div className="flex items-center gap-3 w-full">
-                        <Button
-                          variant="outline"
-                          className="flex-1 h-11 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold gap-2"
-                          onClick={() => window.open(`tel:${lead.phone}`, '_self')}
-                        >
-                          <Phone size={18} /> Ligar
-                        </Button>
-                        <div className="text-sm font-mono text-slate-500 bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100 select-all">
-                          {lead.phone}
-                        </div>
-                      </div>
-                    )}
-
-                    {lead.email && (
-                      <div className="flex items-center gap-3 w-full">
-                        <Button
-                          variant="outline"
-                          className="flex-1 h-11 border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold gap-2"
-                          onClick={() => window.open(`mailto:${lead.email}`, '_self')}
-                        >
-                          <Mail size={18} /> Email
-                        </Button>
-                        <div className="text-sm text-slate-500 bg-slate-50 px-3 py-2.5 rounded-lg border border-slate-100 select-all truncate max-w-[200px]">
-                          {lead.email}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* SOURCE LINK (Modified) */}
-                  <div className={`pt-4 border-t ${isFile ? 'border-amber-100 bg-amber-50/30 -mx-5 px-5 pb-2 mt-2' : 'border-slate-100'}`}>
-                    <div className={`text-[10px] uppercase font-bold mb-1 ${isFile ? 'text-amber-600' : 'text-slate-400'}`}>
-                      {isFile ? "Lista de Leads Disponível" : "Origem do Lead"}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {/* Only show URL text for web links */}
-                      {!isFile && (
-                        <div className="flex-1 rounded-md py-2 px-3 text-xs font-mono truncate select-all bg-blue-50/50 border border-blue-100 text-blue-800">
-                          {lead.postUrl || "Link indisponível"}
-                        </div>
-                      )}
-
-                      {isFile ? (
-                        <div className="flex-1 flex gap-2">
-                          <Button
-                            size="sm"
-                            className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-sm"
-                            onClick={() => setViewingFileLead(lead)}
-                          >
-                            <TableIcon size={16} className="mr-2" />
-                            Visualizar Lista ({Math.floor(Math.random() * 50) + 10} leads)
-                          </Button>
-                        </div>
-                      ) : (
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-4">
+                    <div className="flex gap-2">
+                      {/* Minimal Contact Actions */}
+                      {whatsappNumber && (
                         <Button
                           size="sm"
-                          className="bg-blue-600 text-white hover:bg-blue-700 px-6 font-bold"
-                          onClick={() => window.open(lead.postUrl || '#', '_blank')}
+                          variant="ghost"
+                          className="h-9 px-3 text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700 font-bold"
+                          onClick={() => window.open(`https://wa.me/55${whatsappNumber}`, '_blank')}
+                          title="WhatsApp"
                         >
-                          <ExternalLink size={16} className="mr-2" />
-                          Ver Comentário
+                          <MessageCircle size={18} />
+                        </Button>
+                      )}
+                      {lead.phone && !whatsappNumber && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-9 px-3 text-slate-600 bg-slate-50 hover:bg-slate-100"
+                          onClick={() => window.open(`tel:${lead.phone}`, '_self')}
+                          title="Ligar"
+                        >
+                          <Phone size={18} />
+                        </Button>
+                      )}
+                      {lead.email && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-9 px-3 text-slate-600 bg-slate-50 hover:bg-slate-100"
+                          onClick={() => window.open(`mailto:${lead.email}`, '_self')}
+                          title="Email"
+                        >
+                          <Mail size={18} />
                         </Button>
                       )}
                     </div>
+
+                    {isFile ? (
+                      <Button
+                        size="sm"
+                        className="bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-sm"
+                        onClick={() => setViewingFileLead(lead)}
+                      >
+                        <TableIcon size={16} className="mr-2" />
+                        Ver Lista
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 text-white hover:bg-blue-700 font-bold"
+                        onClick={() => window.open(lead.postUrl || '#', '_blank')}
+                      >
+                        <ExternalLink size={16} className="mr-2" />
+                        Ver Postagem
+                      </Button>
+                    )}
                   </div>
 
                   <div className="mt-3 flex flex-wrap gap-1">
