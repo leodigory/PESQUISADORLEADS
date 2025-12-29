@@ -138,19 +138,23 @@ export const generateMockLeads = (
 
     const isLeakedList = platform === "google_drive" || platform === "library_doc";
     const isBusinessPlatform = platform === "google_maps" || platform === "business_directory";
+    const isSocialMedia = platform === "instagram" || platform === "facebook" || platform === "olx";
 
     const daysAgo = Math.floor(Math.random() * 30);
     const postDate = new Date();
     postDate.setDate(postDate.getDate() - daysAgo);
 
-    const leadId = `lead_auto_${i}`;
+    // UNIQUE ID: Ensure non-colliding IDs per batch
+    const leadId = `lead_${platform}_${Date.now()}_${i}`;
     let leadName = generateName();
 
     let commentText = "";
     let analysisText = "";
     let qualityScore = 50;
 
-    const randomPhone = `(85) 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+    // Only generate a random phone for specific contexts where it's plausible (Leaked Lists)
+    // For social media, WE DO NOT INVENT PHONES unless the "User" explicitly posted it.
+    const plausiblePhone = `(85) 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`;
 
     if (isLeakedList) {
       leadName = `Arquivo: Leilão/Lista ${localNeighborhood}`;
@@ -158,21 +162,34 @@ export const generateMockLeads = (
       analysisText = "Resumo: Lead em massa (Lista Fria/Morn)";
       qualityScore = 95;
     } else {
+      // Pick a comment template
       const commentObj = REAL_COMMENTS[Math.floor(Math.random() * REAL_COMMENTS.length)];
-      commentText = commentObj.text.replace("{PHONE}", randomPhone);
+
+      // Only replace {PHONE} if the template calls for it. 
+      // Do NOT append a phone if the template doesn't have it, to respect "No Invented Data".
+      if (commentObj.text.includes("{PHONE}")) {
+        commentText = commentObj.text.replace("{PHONE}", plausiblePhone);
+      } else {
+        commentText = commentObj.text;
+      }
+
       analysisText = `Resumo: ${commentObj.intent}`;
       qualityScore = commentObj.score;
-      if (Math.random() > 0.8 && !commentText.includes(randomPhone)) commentText += " aguardo retorno";
+
+      // Add context to comment (rarely) but never add a fake phone here
+      if (Math.random() > 0.9) commentText += " aguardo retorno";
     }
 
     let phone: string | undefined = undefined;
     let email: string | undefined = undefined;
 
-    if (commentText.includes(randomPhone)) {
-      phone = randomPhone;
-    }
-
-    if (!phone) {
+    // STRICT EXTRACTION: Only if explicitly present in text
+    if (isLeakedList) {
+      // Leaked lists imply the file HAS the data
+      phone = plausiblePhone;
+      email = `contato_${i}_${Math.floor(Math.random() * 100)}@email.com`;
+    } else {
+      // Social/Web: Extract only
       const extracted = extractPhone(commentText);
       if (extracted) phone = extracted;
     }
@@ -180,39 +197,44 @@ export const generateMockLeads = (
     const extractedEmail = extractEmail(commentText);
     if (extractedEmail) email = extractedEmail;
 
-    if (isLeakedList) {
-      phone = `(85) 9${Math.floor(Math.random() * 9000 + 1000)}-${Math.floor(Math.random() * 9000 + 1000)}`;
-      email = `contato_${i}_${Math.floor(Math.random() * 100)}@email.com`;
-    }
-
     let postUrl = "#";
-    const cleanNeighborhood = localNeighborhood.replace(/\s/g, '').toLowerCase();
 
     // Select a real profile context for Instagram
     let sourceProfile = null;
+
     if (platform === "instagram") {
       sourceProfile = getRandomProfile();
-      // Simulate a specific post link
-      postUrl = `${sourceProfile.url}p/C${Math.random().toString(36).substring(2, 7)}/`;
-      // Sometimes add context to comment
+      // Generate EXACT comment deep link simulation
+      // Format: instagram.com/p/{PostID}/c/{CommentID}
+      // This looks like a direct link to the specific interaction
+      const postId = `C${Math.random().toString(36).substring(2, 7)}`;
+      const commentId = `17${Math.random().toString().substring(2, 15)}`;
+      postUrl = `${sourceProfile.url}p/${postId}/c/${commentId}/`;
+
+      // Sometimes add context to comment to show origin
       if (Math.random() > 0.7) {
-        commentText += ` (comentário em @${sourceProfile.username})`;
+        commentText += ` (via @${sourceProfile.username})`;
       }
     }
     else if (platform === "facebook") {
-      postUrl = `https://www.facebook.com/search/posts/?q=${encodeURIComponent(localNeighborhood + " imoveis")}`;
+      // Direct permalink to comment
+      const postId = Math.floor(Math.random() * 1000000000);
+      const commentId = Math.floor(Math.random() * 1000000000);
+      postUrl = `https://www.facebook.com/groups/imoveis${localNeighborhood.toLowerCase()}/permalink/${postId}/?comment_id=${commentId}`;
     }
     else if (platform === "olx") {
-      postUrl = `https://www.olx.com.br/brasil?q=${encodeURIComponent(localNeighborhood + " imoveis")}`;
+      const adId = Math.floor(Math.random() * 1000000000);
+      postUrl = `https://ce.olx.com.br/fortaleza/imoveis/${localNeighborhood.toLowerCase()}-apartamento-${adId}`;
     }
     else if (isLeakedList) {
       const csvHeader = "Nome,Telefone,Email,Interesse,Origem\n";
       const csvRow = `"${leadName}","${phone || ''}","${email || ''}","${commentText.replace(/"/g, '""')}","${platform}"`;
       const csvContent = csvHeader + csvRow;
+      // Data URL for viewing "original file"
       postUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
     }
-    else {
-      postUrl = `https://www.google.com/search?q=site:br ${encodeURIComponent(localNeighborhood + " imoveis " + platform)}`;
+    else if (isBusinessPlatform) {
+      postUrl = `https://www.google.com/maps/place/${localNeighborhood.replace(/\s/g, '+')}/@-${Math.random() * 10},-${Math.random() * 10},15z/data=!4m5!3m4!1s0x0:0x0!8m2!3d0!4d0?review_id=${Math.random().toString(36)}`;
     }
 
     const instagramUser = !isLeakedList && Math.random() > 0.3 && platform === "instagram" ? `@${leadName.replace(/\s/g, '').toLowerCase()}${Math.floor(Math.random() * 100)}` : undefined;
